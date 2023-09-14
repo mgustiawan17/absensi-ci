@@ -304,124 +304,139 @@ class Presences extends CI_Controller
 	public function list_rekap()
 	{
 		$data = array();
-		$selisih_hari = 30; //jumlah hari yg akan ditampilkan
-		
-		$today = date('Y-m-d');
-		$minus = mktime(0, 0, 0, date('m'), date('d') - $selisih_hari, date('Y'));
-		$pastmonth = date('Y-m-d', $minus);
-
-		$data['date_start'] = $this->tanggal->tanggal_indo($pastmonth);
-		$data['date_end'] = $this->tanggal->tanggal_indo($today);
-
 		$data['kehadiran'] = array();
 
+		$data['date_start'] = ''; // Inisialisasi variabel date_start
+		$data['date_end'] = ''; // Inisialisasi variabel date_end
+
 		if ($_POST) {
-			$today = $this->tanggal->tanggal_simpan_db($this->input->post('presences_date_end'));
-			$pastmonth = $this->tanggal->tanggal_simpan_db($this->input->post('presences_date_start'));
+			// Ambil tanggal dari form
+			$date_start = $this->input->post('presences_date_start');
+			$date_end = $this->input->post('presences_date_end');
 
-			$selisih_hari = $this->tanggal->get_selisih($today, $pastmonth);
+			$this->session->set_userdata('date_start', $date_start);
+        	$this->session->set_userdata('date_end', $date_end);
 
-			$data['date_start'] = $this->input->post('presences_date_start');
-			$data['date_end'] = $this->input->post('presences_date_end');
-		}
-		// $data['kehadiran'] = $this->presences_m->get_by_just_date('22/06/2023','22/07/2023')->row_array();
+			// Konversi tanggal ke format yang sesuai dengan database (YYYY-MM-DD)
+			$date_start_db = date('Y-m-d', strtotime(str_replace('/', '-', $date_start)));
+			$date_end_db = date('Y-m-d', strtotime(str_replace('/', '-', $date_end)));
 
-		$jumlah_row = $this->presences_m->get_by_just_date('2023/08/20')->num_rows();
-		// var_dump($jumlah_row);
+			// Panggil model untuk mendapatkan data berdasarkan rentang tanggal
+			$data['kehadiran'] = $this->presences_m->get_by_date_range($date_start_db, $date_end_db);
 
-		for ($i = $jumlah_row; $i >= 0; $i--) {
+			// Mengisi nilai date_start dan date_end untuk dikirimkan ke view
+			$data['date_start'] = $date_start;
+			$data['date_end'] = $date_end;
 
-			if ($this->presences_m->get_by_just_date('2023/08/20')->num_rows() > 0) {
-				$data['kehadiran'] = $this->presences_m->get_by_just_date('2023/08/20')->row_array();
-				$data['kehadiran'][$i]['datang'] = $this->tanggal->get_jam($data['jam_masuk']);
-				$data['kehadiran'][$i]['pulang'] = $this->tanggal->get_jam($data['jam_keluar']);
-				$data['kehadiran'][$i]['alasan'] = $data['nama_alasan'];
-				if ($data['id_alasan'] == '5') {
-					$data['kehadiran'][$i]['alasan'] = '-';                                              
-				}
-			} else {
-				$data['kehadiran'][$i]['datang'] = '-';
-				$data['kehadiran'][$i]['pulang'] = '-';
-				$data['kehadiran'][$i]['alasan'] = '-';
+			// Loop melalui hasil dan tambahkan datang, pulang, dan alasan
+			foreach ($data['kehadiran'] as &$row) {
+				$row['nama'] = $this->presences_m->get_name_by_id($row['id_karyawan']); // Ganti dengan model dan metode yang sesuai
+				$row['tanggal'] = $row['tanggal'];
+				$row['datang'] = date('H:i', strtotime($this->tanggal->get_jam($row['jam_masuk'])));
+				$row['pulang'] = date('H:i', strtotime($this->tanggal->get_jam($row['jam_keluar'])));
+				$row['alasan'] = ($row['id_alasan'] == '5') ? '-' : $row['nama_alasan'];
 			}
-
-			
-
-			// $data['kehadiran'][$i]['datang'] = $this->tanggal->get_jam($data['kehadiran']['jam_masuk']);
-			// $data['kehadiran'][$i]['pulang'] = $this->tanggal->get_jam($data['kehadiran']['jam_keluar']);
-			// $data['kehadiran'][$i]['alasan'] = $data['kehadiran']['nama_alasan'];
 		}
 
-		
-		// $data['kehadiran'] = array();
-		//get data kehadiran
-
-		// $data['kehadiran']['datang'] = $this->tanggal->get_jam($data['kehadiran']['jam_masuk']);
-		// $data['kehadiran']['pulang'] = $this->tanggal->get_jam($data['kehadiran']['jam_keluar']);
-		// $data['kehadiran']['alasan'] = $data['kehadiran']['nama_alasan'];
-
-		// $data['kehadiran'][$i]['datang'] = $this->tanggal->get_jam($present['jam_masuk']);
-		// $data['kehadiran'][$i]['pulang'] = $this->tanggal->get_jam($present['jam_keluar']);
-
-		// if ($data['kehadiran']->num_rows() > 0) {
-		// 	// $present = $this->presences_m->get_by_date($tanggal, $user_id)->row_array();
-		// 	$data['kehadiran']['datang'] = $data['kehadiran']['jam_masuk'];
-		// 	$data['kehadiran']['pulang'] = $data['kehadiran']['jam_keluar'];
-		// 	$data['kehadiran']['alasan'] = $data['kehadiran']['nama_alasan'] . '(' .$data['kehadiran']['keterangan'] . ')';
-		// 	if ($$data['kehadiran']['id_alasan'] == '5') {
-		// 		$data['kehadiran']['alasan'] = '-';                                              
-		// 	}
-		// } else {
-		// 	$data['kehadiran']['datang'] = '-';
-		// 	$data['kehadiran']['pulang'] = '-';
-		// 	$data['kehadiran']['alasan'] = '-';
-		// }
-
-		// var_dump($data['kehadiran']);
-		// var_dump($data['kehadiran']['pulang']);
-		// var_dump($this->input->post('presences_date_start'));
-		
-		// $temp = mktime(0, 0, 0, $this->tanggal->get_only_month($today), $this->tanggal->get_only_date($today) - 1, $this->tanggal->get_only_year($today));
-		// $tanggal = date('Y-m-d');
-
-
-		// $present = $this->presences_m->get_by_just_date($tanggal1,$tanggal2)->row_array();
-		// 	$data['kehadiran']['datang'] = $this->tanggal->get_jam($present['jam_masuk']);
-		// 	$data['kehadiran']['pulang'] = $this->tanggal->get_jam($present['jam_keluar']);
-		// 	$data['kehadiran']['alasan'] = $present['nama_alasan'] . '(' . $present['keterangan'] . ')';
-		// 	if ($present['id_alasan'] == '5') {
-		// 		$data['kehadiran']['alasan'] = '-';
-		// 	}
-
-		// $this->template->display('presences/rekap_absen', $data);
 		$this->template->display('presences/rekap_absen', $data);
-
 	}
 
 	// download rekap excel
-	public function download_excel($id_kelas, $id_semester)
-	{
-		// load to_excel_helper (untuk membuat laporan dengan format excel)
-		$this->load->helper('to_excel');
+	// public function download_excel($id_kelas, $id_semester)
+	// {
+	// 	// load to_excel_helper (untuk membuat laporan dengan format excel)
+	// 	$this->load->helper('to_excel');
 
-		// parameter OK
-		if (!empty($id_kelas) && !empty($id_semester)) {
-			// kelas
-			// $kelas = $this->db->select('t_kehadiran')->where('id_kelas', $id_kelas)->get('kelas')->row()->kelas;
-			$kelas = $this->db->select('t_kehadiran');
-			$tanggal = date('Y-m-d');
-			$user_id = 6;
+	// 	// parameter OK
+	// 	if (!empty($id_kelas) && !empty($id_semester)) {
+	// 		// kelas
+	// 		// $kelas = $this->db->select('t_kehadiran')->where('id_kelas', $id_kelas)->get('kelas')->row()->kelas;
+	// 		$kelas = $this->db->select('t_kehadiran');
+	// 		$tanggal = date('Y-m-d');
+	// 		$user_id = 6;
 
-			$query = $this->presences_m->get_by_date($tanggal, $user_id)->num_rows() > 0;
+	// 		$query = $this->presences_m->get_by_date($tanggal, $user_id)->num_rows() > 0;
 
-			$nama_file = 'REKAP_ABSEN_KELAS_' . $tanggal . '_SEMESTER_' . $user_id;
+	// 		$nama_file = 'REKAP_ABSEN_KELAS_' . $tanggal . '_SEMESTER_' . $user_id;
 
-			to_excel($query, $nama_file);
+	// 		to_excel($query, $nama_file);
+	// 	}
+	// 	// parameter tidak lengkap
+	// 	else {
+	// 		$this->session->set_flashdata('pesan', 'Proses pembuatan data rekap (Excel) gagal. Parameter tidak lengkap.');
+	// 		redirect('rekap');
+	// 	}
+	// }
+
+	public function export_to_excel() {
+		$date_start = $this->session->userdata('date_start');
+    	$date_end = $this->session->userdata('date_end');
+
+		// Validasi tanggal
+		if (empty($date_start) || empty($date_end)) {
+			// Handle kesalahan jika tanggal awal atau akhir kosong
+			redirect('presences/list_rekap'); // Redirect ke halaman sebelumnya atau tampilkan pesan kesalahan
 		}
-		// parameter tidak lengkap
-		else {
-			$this->session->set_flashdata('pesan', 'Proses pembuatan data rekap (Excel) gagal. Parameter tidak lengkap.');
-			redirect('rekap');
+
+		// Konversi tanggal ke format yang sesuai dengan database (YYYY-MM-DD)
+		$date_start_db = date('Y-m-d', strtotime(str_replace('/', '-', $date_start)));
+		$date_end_db = date('Y-m-d', strtotime(str_replace('/', '-', $date_end)));
+
+		$this->load->model('presences_m');
+		$data['kehadiran'] = $this->presences_m->get_by_date_range($date_start_db, $date_end_db);
+
+		$data['date_start'] = $date_start;
+		$data['date_end'] = $date_end;
+
+		require(APPPATH. 'PHPExcel-1.8/Classes/PHPExcel.php');
+		require(APPPATH. 'PHPExcel-1.8/Classes/PHPExcel/Writer/Excel2007.php');
+
+		$object = new PHPExcel();
+
+		$object->getProperties()->setCreator("Framework Indonesia");
+		$object->getProperties()->setLastModifiedBy("Framework Indonesia");
+		$object->getProperties()->setTitle("Daftar Mahasiswa");
+
+		$object->setActiveSheetIndex(0);
+
+		$object->getActiveSheet()->setCellValue('A1', 'NO');
+		$object->getActiveSheet()->setCellValue('B1', 'Nama');
+		$object->getActiveSheet()->setCellValue('C1', 'Tanggal');
+		$object->getActiveSheet()->setCellValue('D1', 'Jam Masuk');
+		$object->getActiveSheet()->setCellValue('E1', 'Jam Pulang');
+		$object->getActiveSheet()->setCellValue('F1', 'Alasan');
+
+		$baris = 2;
+		$no = 1;
+		
+		foreach ($data['kehadiran'] as $hdr) {
+			// if (is_object($hdr) && property_exists($hdr, 'nama')) {
+				$object->getActiveSheet()->setCellValue('A'.$baris, $no++);
+				$object->getActiveSheet()->setCellValue('B'.$baris, $hdr['nama']);
+				$object->getActiveSheet()->setCellValue('C'.$baris, $hdr['tanggal']);
+				$object->getActiveSheet()->setCellValue('D' . $baris, date('H:i', strtotime($hdr['jam_masuk'])));
+    			$object->getActiveSheet()->setCellValue('E' . $baris, date('H:i', strtotime($hdr['jam_keluar'])));
+				$object->getActiveSheet()->setCellValue('F'.$baris, $hdr['nama_alasan']);
+			// }
+			$baris++;
 		}
+
+		$filename="Laporan_kehadiran_" . $date_start_db . "_" . $date_end_db . '.xlsx';
+
+		$object->getActiveSheet()->setTitle("Data Mahasiswa");
+
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header('Content-Disposition: attachment;filename="'.$filename.'"');
+		header('Cache-Control: max-age=0');
+
+		$writer=PHPExcel_IOFactory::createWriter($object, 'Excel2007');
+		$writer->save('php://output');
+
+		exit;
 	}
+
+	// public function tampil_data() {
+    //     $this->load->model('presences_m');
+    //     return $this->presences_m->tampil_data('t_kehadiran');
+    // }
 }

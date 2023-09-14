@@ -45,7 +45,7 @@ class Presences_m extends CI_Model{
 		return $this->db->get();
 	}
 
-	public function get_by_just_date($tanggal1){
+	public function get_by_just_date($tanggal_start, $tanggal_end){
 		$this->db->select('id_kehadiran,
 		t_kehadiran.id_karyawan,
 		nama,
@@ -60,7 +60,9 @@ class Presences_m extends CI_Model{
 		$this->db->join('t_karyawan','t_karyawan.id_karyawan = t_kehadiran.id_karyawan');
 		$this->db->join('t_alasan','t_alasan.id_alasan = t_kehadiran.id_alasan');
 		// $this->db->where($this->table_name.'.id_karyawan',$id_karyawan);
-		$this->db->where('tanggal',$tanggal1);
+		$this->db->where('tanggal >=', $tanggal_start);
+		$this->db->where('tanggal <=', $tanggal_end);
+		$this->db->where($this->table_status, '1');
 		// $this->db->where("tanggal BETWEEN '.$tanggal1.' AND '.$tanggal2.'");
 
 		// $this->db->where($this->table_name.'.id_karyawan',$id_karyawan);
@@ -107,5 +109,43 @@ class Presences_m extends CI_Model{
 	public function delete($id_kehadiran){
 		$this->db->where($this->table_pk,$id_kehadiran);
 		$this->db->delete($this->table_name);
+	}
+
+	public function get_by_date_range($date_start, $date_end)
+    {
+        $this->db->select('id_kehadiran, t_kehadiran.id_karyawan, nama, tanggal, jam_masuk, jam_keluar, hadir, t_kehadiran.id_alasan, t_alasan.nama_alasan, keterangan');
+        $this->db->from($this->table_name);
+        $this->db->join('t_karyawan', 't_karyawan.id_karyawan = ' . $this->table_name . '.id_karyawan');
+        $this->db->join('t_alasan', 't_alasan.id_alasan = ' . $this->table_name . '.id_alasan');
+        $this->db->where('tanggal >=', $date_start);
+        $this->db->where('tanggal <=', $date_end);
+        $this->db->where($this->table_status, '1');
+        return $this->db->get()->result_array();
+    }
+
+	public function get_name_by_id($id_karyawan)
+    {
+        $this->db->select('t_karyawan.nama');
+		$this->db->from('t_kehadiran');
+		$this->db->join('t_karyawan', 't_karyawan.id_karyawan = t_kehadiran.id_karyawan');
+		$this->db->where('t_kehadiran.id_karyawan', $id_karyawan);
+
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			return $row->nama;
+		}
+
+		return null;
+    }
+
+	public function tampil_data()
+	{
+		$this->db->select('t_karyawan.nama AS nama_karyawan, t_kehadiran.tanggal, t_kehadiran.jam_masuk, t_kehadiran.jam_keluar, t_alasan.nama_alasan');
+		$this->db->from('t_kehadiran');
+		$this->db->join('t_karyawan', 't_karyawan.id_karyawan = t_kehadiran.id_karyawan');
+		$this->db->join('t_alasan', 't_alasan.id_alasan = t_kehadiran.id_alasan');
+		return $this->db->get()->result();
 	}
 }

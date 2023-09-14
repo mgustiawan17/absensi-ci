@@ -40,7 +40,7 @@
 
 $route['default_controller'] = "user";
 $route['404_override'] = '';
-
+$route['export-to-excel'] = 'presences/export_to_excel';
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

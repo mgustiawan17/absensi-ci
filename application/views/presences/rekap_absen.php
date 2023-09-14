@@ -1,6 +1,6 @@
 <div class="row">
 	<div class="col-md-12">
-		<h1>Kehadiran</h1>
+		<h1>Laporan Kehadiran</h1>
 		<hr/>
 	</div>
 </div>
@@ -24,8 +24,21 @@
 			</div>
 		</form>
 	</div>
-	
 </div>
+<br>
+<!-- <form method="POST" action="">
+    <label for="presences_date_start">Tanggal Awal</label>
+    <input type="date" name="presences_date_start" id="presences_date_start">
+    
+    <label for="presences_date_end">Tanggal Akhir</label>
+    <input type="date" name="presences_date_end" id="presences_date_end">
+    
+    <button type="submit">Export to Excel</button>
+</form> -->
+<div class="col-md-6">
+        <a href="<?php echo base_url('presences/export_to_excel'); ?>" class="btn btn-success">Export to Excel</a>
+</div>
+<br><br><br>
 <div class="row">
 	<div class="col-md-12">
 		<table class="table table-bordered table-hover">
@@ -33,6 +46,8 @@
 				<tr>
 					<!-- <th style="text-align:center;">Tanggal</th> -->
 					<!-- <th style="text-align:center;">Hari</th> -->
+					<th style="text-align:center;">Nama</th>
+					<th style="text-align:center;">Tanggal</th>
 					<th style="text-align:center;">Datang</th>
 					<th style="text-align:center;">Pulang</th>
 					<th style="text-align:center;">Alasan</th>
@@ -41,15 +56,16 @@
 			<tbody>
 			<?php 
 				foreach($kehadiran as $row){
-					echo '<tr>';
-					echo '<td>'.$row['datang'].'</td>';
-					// echo '<td>'.$row['nama'].'</td>';
-					echo '<td>'.$row['pulang'].'</td>';
-					echo '<td>'.$row['alasan'].'</td>';
-					// echo '<td>'.$row['id_karyawan'].'</td>';
-					echo '</tr>';
+					if ($row['alasan'] != 'Masuk') { // Hanya tampilkan jika alasan bukan 'Masuk'
+						echo '<tr>';
+						echo '<td>'.$row['nama'].'</td>';
+						echo '<td>'.$row['tanggal'].'</td>';
+						echo '<td>'.$row['datang'].'</td>';
+						echo '<td>'.$row['pulang'].'</td>';
+						echo '<td>'.$row['alasan'].'</td>';
+						echo '</tr>';
+					}
 				}
-                var_dump($row)
 			?>
 			</tbody>
             
