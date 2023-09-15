@@ -18,11 +18,20 @@
 				<input type="text" name="nik" id="nik" class="form-control" placeholder="NIK" required="required" maxlength="6" readonly="true" value="<?php echo $this->session->userdata('user_nik'); ?>">
 			</div>
 		</div> -->
-		<div class="form-group">
-			<label for="rfid" class="col-sm-2 control-label">Tempelkan RFID</label>
-			<div class="col-sm-4">
-				<input type="text" name="rfid" id="rfid" class="form-control" placeholder="RFID" required="required" value="" autofocus>
-			</div>
+		<div class="form-group m-form__group row">
+				<!-- <label for="rfid" class="col-sm-2 control-label">Tempelkan RFID</label> -->
+				<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+					<!-- <input type="text" name="rfid" id="rfid" class="form-control" placeholder="RFID" required="required" value="" autofocus> -->
+					<img src="<?= base_url('assets/card.png') ?>" alt="Gambar dari Asset">
+				</div>
+				<label for="rfid" class="col-sm-4 control-label">Tempelkan RFID</label>
+				<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+					<input type="text" name="rfid" id="rfid" class="form-control" placeholder="RFID" required="required" value="" autofocus>
+				</div>
+				<br><br>
+				<div class="col-sm-2 col-sm-offset-4">
+					<input type="submit" name="submit" value="Submit" id="btn_submit" class="btn btn-primary">
+				</div>
 		</div>
 <!--         
 		<div class="form-group">
@@ -38,10 +47,5 @@
 				<!-- <input type="radio" name="type_absen" id="type_absen" value="2" checked="checked">&nbsp;Pulang&nbsp;
 			</div>
 		</div> -->
-		<div class="form-group">
-			<div class="col-sm-4 col-sm-offset-2">
-				<input type="submit" name="submit" value="Submit" id="btn_submit" class="btn btn-primary">
-			</div>
-		</div>
 	</form>
 </div>
